@@ -1,5 +1,5 @@
 # cuda-lab
-Playing with CUDA and GPUs.
+Playing with CUDA and GPUs in Google Colab.
 
 ```
 !git clone https://github.com/alessandrobessi/cuda-lab.git
@@ -9,12 +9,15 @@ Playing with CUDA and GPUs.
 import os
 os.environ['PATH'] += ':/usr/local/cuda/bin'
 
-%%writefile example.cu
+!nvcc cuda-lab/add.cu -o add -Wno-deprecated-gpu-targets
+!nvprof ./add
+
+%%writefile snippet.cu
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 ...
 
-!nvcc example.cu -o example -Wno-deprecated-gpu-targets
-!nvprof ./example
+!nvcc snippet.cu -o snippet -Wno-deprecated-gpu-targets
+!nvprof ./snippet
 ```
