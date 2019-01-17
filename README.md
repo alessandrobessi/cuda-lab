@@ -15,6 +15,6 @@ os.environ['PATH'] += ':/usr/local/cuda/bin'
 #include <math.h>
 ...
 
-!/usr/local/cuda/bin/nvcc example.cu -o example -Wno-deprecated-gpu-targets
-!/usr/local/cuda/bin/nvprof ./example
+!nvcc example.cu -o example -Wno-deprecated-gpu-targets
+!nvprof ./example
 ```
