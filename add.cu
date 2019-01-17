@@ -14,7 +14,7 @@ GPU kernel
     gridDim.x     number of thread blocks
     blockIdx.x    index of current block within the grid
 */
-__global__ void add_gpu(int n, float *x, float *y)
+__global__ void add(int n, float *x, float *y)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
