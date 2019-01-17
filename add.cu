@@ -42,9 +42,9 @@ int main()
 
     // run kernel on 1M elements on the CPU
     // CUDA GPUs run kernels using blocks of threads that are a multiple of 32 in size
-    int blockSize = 256;
-    int numBlocks = (N + blockSize - 1) / blockSize;
-    add<<<numBlocks, blockSize>>>(N, x, y);
+    int threads_per_block = 256;
+    int num_blocks = (N + threads_per_block - 1) / threads_per_block;
+    add<<<num_blocks, threads_per_block>>>(N, x, y);
 
     // wait for GPU to finish before accessing on host
     cudaDeviceSynchronize();
