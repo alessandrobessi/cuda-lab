@@ -4,7 +4,7 @@ Playing with CUDA and GPUs in Google Colab.
 ## Usage
 1. Open a Colab notebook: https://colab.research.google.com/
 2. Create a new Python 3 notebook
-3. Change runtime type using GPU as hardware accelerator
+3. Change runtime type selecting GPU as hardware accelerator
 4. Git clone this repository:
 ```
 !git clone https://github.com/alessandrobessi/cuda-lab.git
