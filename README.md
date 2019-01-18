@@ -34,6 +34,11 @@ os.environ['PATH'] += ':/usr/local/cuda/bin'
 !nvprof ./add
 ```
 
+10. or just time it:
+```
+!time ./add
+```
+
 You can also create a Cuda source file using the magic command `%%writefile <filename.cu>`:
 ``` 
 %%writefile snippet.cu
