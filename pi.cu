@@ -13,18 +13,17 @@
 #define THREADS_PER_BLOCK 256
 #define ITER_PER_THREAD 2048
 
-__global__ void kernel(int* count)
+__global__ void kernel(int *count)
 {
     double x, y, z;
 
     // find the overall ID of the thread
     int index = blockDim.x * blockIdx.x + threadIdx.x;
     count[index] = 0;
+    curandState state;
+    curand_init((unsigned long long)clock() + index, 0, 0, &state);
     for (int i = 0; i < ITER_PER_THREAD; i++)
     {
-        curandState state;
-        curand_init((unsigned long long)clock() + i, 0, 0, &state);
-
         x = curand_uniform_double(&state);
         y = curand_uniform_double(&state);
         z = ((x*x)+(y*y));
