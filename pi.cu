@@ -1,3 +1,7 @@
+/*
+!nvcc pi.cu -o pi -Wno-deprecated-gpu-targets -lcurand
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda.h>
