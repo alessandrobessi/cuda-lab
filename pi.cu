@@ -6,32 +6,32 @@
 #include <stdlib.h>
 #include <cuda.h>
 #include <curand.h>
+#include <curand_kernel.h>
 #include <time.h>
 
-#define N 100000
+#define NUM_BLOCKS 1024
+#define THREADS_PER_BLOCK 256
+#define ITER_PER_THREAD 2048
 
-__global__ void kernel(int* count, float* random_vals)
+__global__ void kernel(int* count)
 {
-    int i;
-    double x,y,z;
-    
+    double x, y, z;
+
     // find the overall ID of the thread
-    int tid = blockDim.x * blockIdx.x + threadIdx.x;
-    i = tid;
-    int xidx = 0, yidx = 0;
+    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    count[index] = 0;
+    for (int i = 0; i < ITER_PER_THREAD; i++)
+    {
+        curandState state;
+        curand_init((unsigned long long)clock() + i, 0, 0, &state);
+
+        x = curand_uniform_double(&state);
+        y = curand_uniform_double(&state);
+        z = ((x*x)+(y*y));
  
-    xidx = i + i;
-    yidx = xidx + 1;
- 
-    // get the random x,y points
-    x = random_vals[xidx];
-    y = random_vals[yidx];
-    z = ((x*x)+(y*y));
- 
-    if (z<=1)
-        count[tid] = 1;
-    else
-        count[tid] = 0;
+        if (z <= 1)
+            count[index] += 1;
+    }
 }
 
 void CUDAErrorCheck()
@@ -45,51 +45,28 @@ void CUDAErrorCheck()
 }
 
 int main()
-{
-    float *random_vals;
-    double pi;
-    
-    // Allocate in the unified memory the array for the random numbers
-    cudaMallocManaged(&random_vals, 2 * N * sizeof(float));
-        
-    // Use CuRand to generate an array of random numbers on the device
-    int status;
-    curandGenerator_t gen;
-    status = curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_MRG32K3A);
-    status |= curandSetPseudoRandomGeneratorSeed(gen, 4294967296ULL^time(NULL));
-    status |= curandGenerateUniform(gen, random_vals, 2 * N);
-    status |= curandDestroyGenerator(gen);
-        
-    // Check to see if there was any problem launching the CURAND kernels and generating
-    // the random numbers on the device
-    if (status != CURAND_STATUS_SUCCESS)
-    {
-        printf("CuRand Failure\n");
-        exit(EXIT_FAILURE);
-    }
- 
-    int threads_per_block = 256;
-    int num_blocks = (N + threads_per_block - 1) / threads_per_block;
-        
+{   
+    long unsigned int n = NUM_BLOCKS * THREADS_PER_BLOCK;
     int *count;
-    cudaMallocManaged(&count, num_blocks * threads_per_block * sizeof(int));
+    cudaMallocManaged(&count, n * sizeof(int));
     CUDAErrorCheck();
         
-    kernel <<<num_blocks, threads_per_block>>> (count, random_vals);
+    kernel <<<NUM_BLOCKS, THREADS_PER_BLOCK>>> (count);
         
     cudaDeviceSynchronize();
     CUDAErrorCheck();
     
-    unsigned int reduced_count = 0;
-    for(int i = 0; i < N; i++)
+    long unsigned int reduced_count = 0;
+    for(int i = 0; i < n; i++)
         reduced_count += count[i];
  
-    cudaFree(random_vals);
     cudaFree(count);
  
     // find the ratio
-    pi = ((double)reduced_count / N) * 4.0;
-    printf("PI = %g\n", pi);
+    double pi;
+    long unsigned int total_iter = n * ITER_PER_THREAD;
+    pi = ((double)reduced_count / total_iter) * 4.0;
+    printf("PI [%lu iterations] = %g\n", total_iter, pi);
  
     return 0;
 }
