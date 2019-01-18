@@ -13,6 +13,8 @@
 #define THREADS_PER_BLOCK 256
 #define ITER_PER_THREAD 2048
 
+#define PI 3.14159265359
+
 __global__ void kernel(int *count)
 {
     double x, y, z;
@@ -26,7 +28,7 @@ __global__ void kernel(int *count)
     {
         x = curand_uniform_double(&state);
         y = curand_uniform_double(&state);
-        z = ((x*x)+(y*y));
+        z =  x * x + y * y;
  
         if (z <= 1)
             count[index] += 1;
@@ -50,7 +52,7 @@ int main()
     cudaMallocManaged(&count, n * sizeof(int));
     CUDAErrorCheck();
         
-    kernel <<<NUM_BLOCKS, THREADS_PER_BLOCK>>> (count);
+    kernel<<<NUM_BLOCKS, THREADS_PER_BLOCK>>>(count);
         
     cudaDeviceSynchronize();
     CUDAErrorCheck();
@@ -62,10 +64,10 @@ int main()
     cudaFree(count);
  
     // find the ratio
-    double pi;
     long unsigned int total_iter = n * ITER_PER_THREAD;
-    pi = ((double)reduced_count / total_iter) * 4.0;
-    printf("PI [%lu iterations] = %g\n", total_iter, pi);
- 
+    double pi = ((double)reduced_count / total_iter) * 4.0;
+    printf("PI [%lu iterations] = %.10g\n", total_iter, pi);
+    printf("Error = %.10g\n", pi - PI);
+
     return 0;
 }
